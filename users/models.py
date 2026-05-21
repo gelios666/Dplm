@@ -10,13 +10,11 @@ USER_TYPE_CHOICES = (
 
 class User(AbstractUser):
     email = models.EmailField(unique=True)
-
     type = models.CharField(
         max_length=10,
         choices=USER_TYPE_CHOICES,
         default='buyer'
     )
-
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username']
 
