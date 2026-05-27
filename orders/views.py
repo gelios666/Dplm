@@ -5,7 +5,6 @@ from django_filters.rest_framework import DjangoFilterBackend
 
 from .models import Order
 from .serializers import OrderSerializer
-
 from .filters import OrderFilter
 
 from users.permissions import IsBuyer
@@ -19,9 +18,7 @@ class OrderListCreateView(generics.ListCreateAPIView):
         IsBuyer,
     )
 
-    queryset = Order.objects.all()
-
-    filter_backends = [DjangoFilterBackend]
+    filter_backends = (DjangoFilterBackend,)
     filterset_class = OrderFilter
 
     def get_queryset(self):

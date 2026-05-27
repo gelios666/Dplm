@@ -1,12 +1,6 @@
 from rest_framework import serializers
 
-from .models import (
-    Order,
-    OrderItem,
-)
-
-from catalog.models import Product
-
+from .models import Order, OrderItem
 from .services import create_order
 
 
@@ -27,21 +21,16 @@ class OrderItemSerializer(serializers.ModelSerializer):
             'price',
         )
 
-        read_only_fields = (
-            'price',
-        )
+        read_only_fields = ('price',)
 
 
 class OrderSerializer(serializers.ModelSerializer):
-    items = OrderItemSerializer(
-        many=True,
-    )
+    items = OrderItemSerializer(many=True)
 
-    buyer = serializers.StringRelatedField(
-        read_only=True,
-    )
+    buyer = serializers.StringRelatedField(read_only=True)
 
-    total_price = serializers.SerializerMethodField()
+    # 🔥 используем модельную логику (лучше чем пересчитывать тут)
+    total_sum = serializers.ReadOnlyField()
 
     class Meta:
         model = Order
@@ -51,7 +40,7 @@ class OrderSerializer(serializers.ModelSerializer):
             'buyer',
             'status',
             'items',
-            'total_price',
+            'total_sum',
             'created_at',
         )
 
@@ -60,17 +49,8 @@ class OrderSerializer(serializers.ModelSerializer):
             'created_at',
         )
 
-    def get_total_price(self, obj):
-        total = 0
-
-        for item in obj.items.all():
-            total += item.price * item.quantity
-
-        return total
-
     def create(self, validated_data):
         items_data = validated_data.pop('items')
-
         buyer = self.context['request'].user
 
         return create_order(

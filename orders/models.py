@@ -1,5 +1,4 @@
 from django.db import models
-
 from users.models import User
 from catalog.models import Product
 
@@ -24,12 +23,18 @@ class Order(models.Model):
         default='pending',
     )
 
-    created_at = models.DateTimeField(
-        auto_now_add=True,
-    )
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f'Order #{self.id}'
+
+    # 🔥 ОБЩАЯ СУММА ЗАКАЗА (нужно для email)
+    @property
+    def total_sum(self):
+        return sum(
+            item.quantity * item.price
+            for item in self.items.all()
+        )
 
 
 class OrderItem(models.Model):
