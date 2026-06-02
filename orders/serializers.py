@@ -1,9 +1,36 @@
 from rest_framework import serializers
 
-from .models import Order, OrderItem
+from .models import Order, OrderItem, Address
 from .services import create_order
 
 
+# =========================
+# ADDRESS
+# =========================
+class AddressSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Address
+        fields = (
+            'id',
+            'city',
+            'street',
+            'house',
+            'apartment',
+        )
+
+
+# =========================
+# ORDER STATUS
+# =========================
+class OrderStatusSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Order
+        fields = ('status',)
+
+
+# =========================
+# ORDER ITEM
+# =========================
 class OrderItemSerializer(serializers.ModelSerializer):
     product_title = serializers.CharField(
         source='product.title',
@@ -12,7 +39,6 @@ class OrderItemSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = OrderItem
-
         fields = (
             'id',
             'product',
@@ -20,16 +46,22 @@ class OrderItemSerializer(serializers.ModelSerializer):
             'quantity',
             'price',
         )
-
         read_only_fields = ('price',)
 
 
+# =========================
+# ORDER
+# =========================
 class OrderSerializer(serializers.ModelSerializer):
     items = OrderItemSerializer(many=True)
 
     buyer = serializers.StringRelatedField(read_only=True)
 
-    # 🔥 используем модельную логику (лучше чем пересчитывать тут)
+    # адрес передаётся как ID (важно для создания заказа)
+    address = serializers.PrimaryKeyRelatedField(
+        queryset=Address.objects.all()
+    )
+
     total_sum = serializers.ReadOnlyField()
 
     class Meta:
@@ -38,6 +70,7 @@ class OrderSerializer(serializers.ModelSerializer):
         fields = (
             'id',
             'buyer',
+            'address',
             'status',
             'items',
             'total_sum',
@@ -51,9 +84,11 @@ class OrderSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         items_data = validated_data.pop('items')
+        address = validated_data.pop('address', None)
         buyer = self.context['request'].user
 
         return create_order(
             buyer,
             items_data,
+            address=address
         )

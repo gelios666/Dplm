@@ -1,11 +1,12 @@
 from django.core.mail import send_mail
 from django.conf import settings
+from django.db import transaction
 
 from .models import Order, OrderItem
 
 
 # =========================
-# 📧 EMAIL АДМИНУ (НАКЛАДНАЯ)
+# 📧 ADMIN EMAIL
 # =========================
 def send_order_to_admin(order: Order):
     items = order.items.select_related('product')
@@ -35,7 +36,7 @@ def send_order_to_admin(order: Order):
 
 
 # =========================
-# 📧 EMAIL КЛИЕНТУ (ПОДТВЕРЖДЕНИЕ)
+# 📧 USER EMAIL
 # =========================
 def send_order_to_user(order: Order):
     items = order.items.select_related('product')
@@ -48,14 +49,14 @@ def send_order_to_user(order: Order):
     message = f"""
 Здравствуйте!
 
-Ваш заказ #{order.id} принят в обработку.
+Ваш заказ #{order.id} принят.
 
 📦 Статус: {order.status}
 
 🛒 Товары:
 {items_text}
 
-💰 Сумма заказа: {order.total_sum}
+💰 Сумма: {order.total_sum}
 
 Спасибо за покупку!
 """
@@ -69,11 +70,13 @@ def send_order_to_user(order: Order):
 
 
 # =========================
-# 📦 СОЗДАНИЕ ЗАКАЗА
+# 📦 CREATE ORDER (FIXED)
 # =========================
-def create_order(buyer, items_data):
+@transaction.atomic
+def create_order(buyer, items_data, address=None):
     order = Order.objects.create(
         buyer=buyer,
+        address=address
     )
 
     for item_data in items_data:
@@ -87,10 +90,8 @@ def create_order(buyer, items_data):
             price=product.price,
         )
 
-    # 📧 EMAIL АДМИНУ
+    # EMAILS (после успешного создания)
     send_order_to_admin(order)
-
-    # 📧 EMAIL КЛИЕНТУ
     send_order_to_user(order)
 
     return order

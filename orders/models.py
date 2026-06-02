@@ -10,11 +10,36 @@ ORDER_STATUS_CHOICES = (
 )
 
 
+class Address(models.Model):
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='addresses'
+    )
+
+    city = models.CharField(max_length=255)
+    street = models.CharField(max_length=255)
+    house = models.CharField(max_length=50)
+    apartment = models.CharField(max_length=50, blank=True, null=True)
+
+    def __str__(self):
+        return f'{self.city}, {self.street}'
+
+
 class Order(models.Model):
     buyer = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
         related_name='orders',
+    )
+
+
+    address = models.ForeignKey(
+        Address,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='orders'
     )
 
     status = models.CharField(
@@ -28,7 +53,6 @@ class Order(models.Model):
     def __str__(self):
         return f'Order #{self.id}'
 
-    # 🔥 ОБЩАЯ СУММА ЗАКАЗА (нужно для email)
     @property
     def total_sum(self):
         return sum(

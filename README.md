@@ -1,108 +1,118 @@
-# 🛒 Retail Shop API (Django REST Framework)
+🛒 Retail Shop API (Django + DRF)
 
-Backend-приложение для автоматизации закупок в розничной сети через REST API.
+Backend-система автоматизации интернет-магазина с корзиной, заказами, адресами доставки, поставщиками и email-уведомлениями.
 
----
+🚀 Стек технологий
+Python 3.11
+Django 4.2
+Django REST Framework
+PostgreSQL
+JWT (SimpleJWT)
+django-filter
+drf-spectacular
+SMTP email
+YAML импорт данных
 
-# 🚀 Описание проекта
+🏗 Архитектура проекта
 
-Сервис позволяет:
+Система разделена на модули:
 
-## 👤 Пользователям:
-- регистрироваться и авторизоваться
-- просматривать каталог товаров
-- добавлять товары в корзину
-- оформлять заказы
-- получать email уведомления о заказе
+users — пользователи и роли
+catalog — магазины, товары, категории
+cart — корзина
+orders — заказы
+services — бизнес-логика (создание заказа, email)
 
-## 🏪 Поставщикам (расширяемо):
-- управлять товарами
-- загружать прайсы (YAML импорт)
-- отслеживать заказы
+👥 Роли пользователей
+🧑 Buyer (покупатель)
+управление корзиной
+оформление заказов
+добавление адресов доставки
+просмотр своих заказов
+🏪 Shop (поставщик)
+управление товарами
+просмотр заказов со своими товарами
+изменение статуса заказа
 
----
+🛒 Cart API
+📌 Возможности:
+добавить товар в корзину
+удалить товар
+изменить количество
+просмотр корзины
+оформление заказа (checkout)
+📡 Endpoints:
+GET    /api/cart/
+POST   /api/cart/add/
+POST   /api/cart/checkout/
 
-# ⚙️ Технологии
+📦 Orders API
+📌 Возможности:
+создание заказа из корзины
+просмотр заказов пользователя
+детальный просмотр заказа
+📡 Endpoints:
+GET  /api/orders/
+GET  /api/orders/<id>/
+POST /api/orders/
 
-- Python 3.11
-- Django
-- Django REST Framework
-- PostgreSQL
-- drf-spectacular (Swagger)
-- django-filter
-- SimpleJWT
+🏪 Supplier API (Shop)
+📌 Возможности:
+просмотр заказов с товарами магазина
+фильтрация заказов по shop
+📡 Endpoints:
+GET /api/orders/supplier/
 
----
+✏️ Order Status API
+📌 Возможности:
+изменение статуса заказа (shop)
+📡 Endpoint:
+PATCH /api/orders/status/<id>/
 
-# 📦 Основной функционал
+🏠 Address API
+📌 Возможности:
+добавление адреса
+просмотр адресов пользователя
+удаление адреса
+📡 Endpoints:
+GET    /api/orders/addresses/
+POST   /api/orders/addresses/
+DELETE /api/orders/addresses/<id>/
 
-## 👤 Users API
-- регистрация
-- логин (JWT)
-- профиль пользователя
+📥 Импорт данных (YAML)
 
-## 📦 Catalog API
-- категории товаров
-- товары
-- импорт товаров из YAML
+Система поддерживает загрузку каталога:
 
-## 🛒 Cart API
-- добавление товаров
-- удаление товаров
-- просмотр корзины
+магазины (Shop)
+категории
+товары
+параметры товаров
+📧 Email уведомления
 
-## 📑 Orders API
-- создание заказа из корзины
-- просмотр списка заказов
-- просмотр деталей заказа
+При создании заказа:
 
----
+✔ клиент получает подтверждение
+✔ администратор получает накладную
 
-# 📧 Email уведомления
+🔐 Аутентификация
 
-При оформлении заказа система отправляет:
+Используется JWT:
 
-## 1. Администратору:
-- состав заказа
-- количество товаров
-- итоговая сумма
+/api/token/
+/api/token/refresh/
 
-## 2. Клиенту:
-- подтверждение заказа
-- список товаров
-- сумма заказа
-- статус заказа
+⚙️ Установка проекта
+git clone <repo>
+cd Diplom
 
----
+python -m venv venv
+source venv/bin/activate
 
-# 📥 Импорт товаров (YAML)
-
-Поддерживается загрузка товаров из YAML файлов:
-
-```bash
-python manage.py import_yaml data/shop1.yaml
-
-
-
-## API документация
-
-Swagger UI доступен по адресу:
-
-/api/schema/swagger-ui/
-
-🧪 Запуск проекта
-1. Установка зависимостей
 pip install -r requirements.txt
-2. Миграции
+
+📦 Миграции
 python manage.py makemigrations
 python manage.py migrate
-3. Создание суперпользователя
+👤 Создание администратора
 python manage.py createsuperuser
-4. Запуск сервера
-python manage.py runserver
-📌 Основные endpoints
-/api/users/
-/api/catalog/
-/api/cart/
-/api/orders/
-/api/schema/
+

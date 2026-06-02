@@ -1,19 +1,25 @@
 from pathlib import Path
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'django-insecure-change-me'
 
-DEBUG = True
+# =========================
+# SECURITY
+# =========================
+SECRET_KEY = os.getenv('SECRET_KEY')
 
-ALLOWED_HOSTS = []
+DEBUG = os.getenv('DEBUG', 'False').lower() in ['true', '1', 'yes']
+
+ALLOWED_HOSTS = ['*']  # для диплома ок (объяснишь как dev режим)
 
 
 # =========================
 # APPS
 # =========================
-
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -21,14 +27,13 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
     'django_filters',
 
-    # third party
     'rest_framework',
     'rest_framework_simplejwt',
     'drf_spectacular',
 
-    # local apps
     'users',
     'catalog',
     'orders',
@@ -39,7 +44,6 @@ INSTALLED_APPS = [
 # =========================
 # MIDDLEWARE
 # =========================
-
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -57,7 +61,6 @@ ROOT_URLCONF = 'backend.urls'
 # =========================
 # TEMPLATES
 # =========================
-
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -80,17 +83,16 @@ ASGI_APPLICATION = 'backend.asgi.application'
 
 
 # =========================
-# DATABASE (PostgreSQL)
+# DATABASE
 # =========================
-
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": "shop_api",
-        "USER": "shop_user",
-        "PASSWORD": "1234",
-        "HOST": "127.0.0.1",
-        "PORT": "5432",
+        "NAME": os.getenv('DB_NAME'),
+        "USER": os.getenv('DB_USER'),
+        "PASSWORD": os.getenv('DB_PASSWORD'),
+        "HOST": os.getenv('DB_HOST'),
+        "PORT": os.getenv('DB_PORT'),
         "OPTIONS": {
             "options": "-c search_path=public"
         }
@@ -99,16 +101,14 @@ DATABASES = {
 
 
 # =========================
-# AUTH USER MODEL
+# AUTH
 # =========================
-
 AUTH_USER_MODEL = 'users.User'
 
 
 # =========================
 # REST FRAMEWORK
 # =========================
-
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
@@ -118,9 +118,8 @@ REST_FRAMEWORK = {
 
 
 # =========================
-# SPECTACULAR (SWAGGER)
+# SPECTACULAR
 # =========================
-
 SPECTACULAR_SETTINGS = {
     'TITLE': 'Retail Shop API',
     'DESCRIPTION': 'Backend for automated procurement system',
@@ -131,7 +130,6 @@ SPECTACULAR_SETTINGS = {
 # =========================
 # PASSWORD VALIDATION
 # =========================
-
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
     {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
@@ -143,9 +141,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # =========================
 # INTERNATIONALIZATION
 # =========================
-
 LANGUAGE_CODE = 'ru-ru'
-
 TIME_ZONE = 'Europe/Moscow'
 
 USE_I18N = True
@@ -155,17 +151,23 @@ USE_TZ = True
 # =========================
 # STATIC
 # =========================
-
 STATIC_URL = 'static/'
-
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
-# EMAIL CONFIG
+# =========================
+# EMAIL
+# =========================
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+EMAIL_HOST = os.getenv('EMAIL_HOST')
+EMAIL_PORT = int(os.getenv('EMAIL_PORT', 587))
 
-DEFAULT_FROM_EMAIL = 'shop@local.com'
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 
-ADMIN_EMAIL = 'admin@local.com'
+EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'True').lower() in ['true', '1', 'yes']
+
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+ADMIN_EMAIL = os.getenv('ADMIN_EMAIL', EMAIL_HOST_USER)
